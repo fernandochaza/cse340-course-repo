@@ -1,0 +1,24 @@
+{
+  "name": "cse340-course-repo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --env-file=.env --watch server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fernandochaza/cse340-course-repo.git"
+  },
+  "author": "Fernando Chazarreta",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fernandochaza/cse340-course-repo/issues"
+  },
+  "homepage": "https://github.com/fernandochaza/cse340-course-repo#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "type": "module"
+}
