@@ -1,16 +1,40 @@
 <%- include('partials/header') %>
-  <main>
-    <h1>
-      <%= title %>
-    </h1>
-    <p>Here are a few of our partner organizations:</p>
-    <ul>
-      <li><img src="/images/brightfuture-logo.png" alt="BrightFuture Builders logo"><strong>BrightFuture
-          Builders</strong>: info@brightfuture.org</li>
-      <li><img src="/images/greenharvest-logo.png" alt="GreenHarvest Growers logo"><strong>GreenHarvest
-          Growers</strong>: contact@greenharvest.org</li>
-      <li><img src="/images/unityserve-logo.png" alt="UnityServe Volunteers logo"><strong>UnityServe
-          Volunteers</strong>: hello@unityserve.org</li>
-    </ul>
+
+  <main id="main-content">
+    <div class="page-content">
+      <div class="container">
+        <div class="page-header">
+          <h1>
+            <%= title %>
+          </h1>
+          <p>Here are a few of our partner organizations:</p>
+        </div>
+
+        <ul class="org-grid" role="list">
+          <li class="card org-card">
+            <img src="/images/brightfuture-logo.png" alt="BrightFuture Builders logo">
+            <div class="org-info">
+              <h3>BrightFuture Builders</h3>
+              <a href="mailto:info@brightfuture.org" class="org-email">info@brightfuture.org</a>
+            </div>
+          </li>
+          <li class="card org-card">
+            <img src="/images/greenharvest-logo.png" alt="GreenHarvest Growers logo">
+            <div class="org-info">
+              <h3>GreenHarvest Growers</h3>
+              <a href="mailto:contact@greenharvest.org" class="org-email">contact@greenharvest.org</a>
+            </div>
+          </li>
+          <li class="card org-card">
+            <img src="/images/unityserve-logo.png" alt="UnityServe Volunteers logo">
+            <div class="org-info">
+              <h3>UnityServe Volunteers</h3>
+              <a href="mailto:hello@unityserve.org" class="org-email">hello@unityserve.org</a>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
   </main>
+
   <%- include('partials/footer') %>

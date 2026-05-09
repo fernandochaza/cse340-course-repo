@@ -5,17 +5,57 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>
-    <%= title %>
+    <%= title %> | CSE 340 Service Network
   </title>
   <link rel="stylesheet" href="/css/main.css">
 </head>
 
 <body>
-  <nav>
-    <ul>
-      <li><a href="/">Home</a></li>
-      <li><a href="/organizations">Organizations</a></li>
-      <li><a href="/projects">Projects</a></li>
-      <li><a href="/categories">Categories</a></li>
-    </ul>
-  </nav>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="container">
+      <a href="/" class="site-logo" aria-label="CSE 340 Service Network – Home">
+        <img src="/images/cse340-service-network-logo.png" alt="CSE 340 Service Network" class="site-logo-img">
+        <span class="site-logo-text">CSE 340 Service Network</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Main navigation">
+        <button class="nav-toggle" aria-controls="nav-menu" aria-expanded="false" aria-label="Toggle navigation">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+
+        <ul class="nav-menu" id="nav-menu" role="list">
+          <li><a href="/">Home</a></li>
+          <li><a href="/organizations">Organizations</a></li>
+          <li><a href="/projects">Projects</a></li>
+          <li><a href="/categories">Categories</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <script>
+    (function () {
+      var toggle = document.querySelector('.nav-toggle');
+      var menu = document.getElementById('nav-menu');
+      if (toggle && menu) {
+        toggle.addEventListener('click', function () {
+          var isOpen = menu.classList.toggle('open');
+          toggle.setAttribute('aria-expanded', String(isOpen));
+        });
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && menu.classList.contains('open')) {
+            menu.classList.remove('open');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.focus();
+          }
+        });
+      }
+    })();
+  </script>

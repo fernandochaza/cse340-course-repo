@@ -1,14 +1,35 @@
 <%- include('partials/header') %>
-  <main>
-    <h1>
-      <%= title %>
-    </h1>
-    <h2>Service Project Categories</h2>
-    <ul>
-      <li>Environmental</li>
-      <li>Educational</li>
-      <li>Community Service</li>
-      <li>Health & Wellness</li>
-    </ul>
+
+  <main id="main-content">
+    <div class="page-content">
+      <div class="container">
+        <div class="page-header">
+          <h1>
+            <%= title %>
+          </h1>
+          <p>Explore service opportunities organized by category:</p>
+        </div>
+
+        <ul class="category-grid" role="list">
+          <li class="category-card">
+            <span class="category-icon" aria-hidden="true">🌿</span>
+            <span class="category-label">Environmental</span>
+          </li>
+          <li class="category-card">
+            <span class="category-icon" aria-hidden="true">📚</span>
+            <span class="category-label">Educational</span>
+          </li>
+          <li class="category-card">
+            <span class="category-icon" aria-hidden="true">🤝</span>
+            <span class="category-label">Community Service</span>
+          </li>
+          <li class="category-card">
+            <span class="category-icon" aria-hidden="true">❤️</span>
+            <span class="category-label">Health &amp; Wellness</span>
+          </li>
+        </ul>
+      </div>
+    </div>
   </main>
+
   <%- include('partials/footer') %>

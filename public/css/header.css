@@ -1,0 +1,100 @@
+/* ============================================================
+   Header & Navigation
+   ============================================================ */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: var(--header-height);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+}
+
+.site-header .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  position: relative;
+}
+
+/* Nav centered absolutely so logo stays flush left */
+.site-nav {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+}
+
+.site-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
+
+.site-logo-img {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.site-logo-text {
+  color: var(--color-primary);
+}
+
+.site-logo:hover {
+  color: var(--color-primary-light);
+  text-decoration: none;
+}
+
+.site-logo:hover .site-logo-text {
+  color: var(--color-primary-light);
+}
+
+/* Nav menu */
+.nav-menu {
+  list-style: none;
+  display: flex;
+  gap: var(--space-md);
+  align-items: center;
+}
+
+.nav-menu a {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-text);
+  text-decoration: none;
+  padding-bottom: 2px;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.nav-menu a:hover {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-accent);
+  text-decoration: none;
+}
+
+/* Hamburger button */
+.nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-xs);
+  color: var(--color-text);
+  border-radius: var(--radius-sm);
+}
+
+.nav-toggle svg {
+  display: block;
+}

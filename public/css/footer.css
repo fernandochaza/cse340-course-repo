@@ -1,0 +1,22 @@
+/* ============================================================
+   Footer
+   ============================================================ */
+.site-footer {
+  background: var(--color-primary);
+  color: rgba(255, 255, 255, 0.85);
+  padding-block: var(--space-lg);
+  margin-top: auto;
+}
+
+.site-footer .container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  text-align: center;
+}
+
+.footer-copy {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.55);
+}
