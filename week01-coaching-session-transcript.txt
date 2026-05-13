@@ -1,0 +1,306 @@
+CSE 340 — Week 01 Coaching Session Transcript
+Date: May 9, 2026
+Student: Fernando Chazarreta
+================================================================================
+
+COACH:
+Welcome! Just to be clear from the start, this is a coaching session, not a test.
+It is perfectly okay—and even encouraged—to say "I don't know" or "I made a
+mistake." That's the fastest way we'll learn today.
+
+I'm your Learning Coach and Software Mentor for this session. I've already peeked
+at your project files here in the editor, so I can reference them directly by file
+and line number as we go.
+
+Before we dive in, what's your name?
+
+--------------------------------------------------------------------------------
+
+FERNANDO:
+My name is Fernando Chazarreta
+
+--------------------------------------------------------------------------------
+
+COACH:
+Great to meet you, Fernando! This is a safe space — there are no wrong answers
+here, only opportunities to learn. Mistakes and "I don't know" moments are
+genuinely welcome.
+
+Let's get started. We have four topics to explore together: Express Routing,
+JavaScript Language Principles, EJS Partials, and Frontend CSS.
+
+I'll kick us off with Topic 1 — Express Routing. Looking at your server.js
+(lines 32–35), I can see this route:
+
+    app.get("/", async (req, res) => {
+      const title = "Home";
+      res.render("home", { title });
+    });
+
+In your own words, what do you think is happening in this block of code?
+
+--------------------------------------------------------------------------------
+
+FERNANDO:
+In that code block:
+
+    app.get("/", async (req, res) => {
+      const title = "Home";
+      res.render("home", { title });
+    });
+
+"app" is the variable name that we assigned to the Express application.
+"get" is a method that we can use to route an incoming GET request to a specific
+path and execute a specific handler to resolve the response.
+
+The method takes 2 arguments. The first one "/" determines the route that the
+request was made to, the second one is a callback function, in this case is an
+async function, I think it needs to be always async but I'm not sure. That
+callback function has 2 arguments, "res" and "req", I know the req one might be
+used to get any data or metadata related to that particular request (headers,
+query params, origin, etc), and the "res" object contains methods that we can use
+to tell the router how to handle the response. In this case we are using "render"
+to send a redirect response that will take the user to the "home" page, or, in
+other words it will reply with the content that we have declared in the "home"
+view. The render method also takes a second argument, which is an object that
+contains variables that will replace the corresponding variables with the same
+names that we have declared in the templates.
+
+--------------------------------------------------------------------------------
+
+COACH:
+That's a really solid breakdown, Fernando — you clearly have a strong grasp of
+how routing works. A couple of things worth clarifying:
+
+- req, res order — the convention is req first, then res. Small thing, but worth
+  noting for readability and consistency with documentation.
+
+- res.render is not a redirect. A redirect (using res.redirect()) tells the
+  browser to go to a different URL. res.render() stays on the same route but
+  processes a template and sends back the resulting HTML as the response. The
+  distinction matters — one changes the URL, the other just responds with content.
+
+- async is not required — it's only needed if you use await inside the function.
+  Right now none of your routes actually await anything, so it's optional here
+  (though harmless to have it).
+
+Now, a follow-up question: you mentioned that the second argument to res.render()
+is an object containing variables passed to the template. Can you think of WHY
+we'd want to pass data that way instead of, say, hardcoding it directly inside
+the EJS file?
+
+--------------------------------------------------------------------------------
+
+FERNANDO:
+Yes. The reason we want to pass data that way is because it enables us to reuse
+the same EJS template for different purposes or different views. In this case,
+title is a variable that is declared in different pages' content but also is being
+used to display the page title in the header partial. That way we only declared
+one header partial and send different titles depending on the page we need to
+render.
+
+--------------------------------------------------------------------------------
+
+COACH:
+Exactly right, Fernando — that's the core idea behind separation of concerns. The
+template handles HOW to display something, while the route controls WHAT data gets
+displayed. Your point about the title variable being shared across the header
+partial and different pages is a perfect real-world example of that.
+
+That wraps up Topic 1 nicely. Let's move to Topic 2 — JavaScript Language
+Principles.
+
+I noticed you're using ES Modules in your project (import instead of require).
+Looking at server.js (lines 1–3):
+
+    import express from "express";
+    import { fileURLToPath } from "url";
+    import path from "path";
+
+Can you explain the difference between the two import styles used here —
+specifically why express is imported one way, but fileURLToPath is imported with
+curly braces { }?
+
+--------------------------------------------------------------------------------
+
+FERNANDO:
+I think the import with curly braces is the way you can import things from ES
+Modules. So in this case "url" is an ESM module that provides that specific
+export. And I think express must be a CommonJS module where you import the entire
+module at once?
+
+--------------------------------------------------------------------------------
+
+COACH:
+Good intuition, but the distinction is actually about something different — it's
+not about CommonJS vs ESM. Both styles here are ES Module syntax. The difference
+is between default exports and named exports:
+
+- No curly braces → you're importing the module's default export. express exports
+  a single main function as its default, so you grab it directly.
+
+- Curly braces → you're importing a named export. The url module exports multiple
+  things (like fileURLToPath, URL, parse, etc.), and the curly braces let you pick
+  exactly which one(s) you want.
+
+Think of it like this: a default export is the "main thing" a module offers,
+while named exports are like items on a menu — you pick what you need by name.
+
+Now, staying on JavaScript principles — looking at server.js lines 11–12:
+
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+
+This is a pattern specific to ES Modules. Do you have a sense of WHY this code is
+needed, and what problem it's solving?
+
+--------------------------------------------------------------------------------
+
+FERNANDO:
+Yes, that code solves the problem of being able to execute the server's code no
+matter where it is running. Without it, for example if we had static routes to
+the local location of the code, we would not be able to run the code somewhere
+else without having to change all of the routes to match the current location.
+
+That code dynamically constructs the domain and paths depending on the context
+where the code is running. That enables the code to run wherever place it is
+deployed and to be able to share the code with other people and they can run it
+without needing to change paths.
+
+--------------------------------------------------------------------------------
+
+COACH:
+That's exactly the right idea, Fernando — you've nailed the WHY. To add a little
+precision to the HOW:
+
+- import.meta.url gives you the URL of the current module file (e.g.,
+  file:///home/fernandochaza/cse340-course-repo/server.js)
+- fileURLToPath() converts that URL into a regular file system path
+- path.dirname() then strips the filename to give you just the directory
+
+So __dirname ends up being the absolute path to the folder where server.js lives,
+no matter where the project is deployed. You can then see it used right below in
+lines like:
+
+    app.use(express.static(path.join(__dirname, "public")));
+
+That's path.join building a safe, cross-platform path on top of that dynamic base.
+
+Great work on Topic 2! Let's move to Topic 3 — EJS Partials and Pages.
+
+Looking at your src/views/partials/header.ejs, can you share a snippet of how
+you're including that partial inside one of your page views, and explain what that
+line does?
+
+--------------------------------------------------------------------------------
+
+FERNANDO:
+<%- include('partials/header') %>
+
+That is the way we include the header partial in any other page. What it does is
+to render the HTML that comes from that partial without escaping it.
+
+--------------------------------------------------------------------------------
+
+COACH:
+Spot on! The <%- tag is key here — it outputs the content unescaped, meaning the
+raw HTML from the partial is injected directly into the page. If you used <%=
+instead, EJS would escape the HTML characters (turning < into &lt;, etc.), and
+you'd see the raw HTML text on screen rather than a rendered header.
+
+One thing worth appreciating about your home.ejs structure: the page itself only
+contains the unique content — the hero section and mission section — while the
+header and footer are delegated to partials. The page stays clean and focused.
+
+Now, looking at your src/views/partials/header.ejs — can you show me a snippet
+from inside that partial where it uses the title variable that gets passed from
+the route, and explain how EJS outputs that variable into the HTML?
+
+--------------------------------------------------------------------------------
+
+FERNANDO:
+<title>
+    <%= title %> | CSE 340 Service Network
+</title>
+
+In this case we use the <%= %> operator, which allows us to declare a variable
+name (or JS code), that variable name will be replaced with whatever we assign to
+it when using that partial in a router, where we pass the second parameter of
+render.
+
+--------------------------------------------------------------------------------
+
+COACH:
+Perfectly explained! And notice the contrast you've now described yourself:
+
+- <%= title %> — outputs the value escaped (safe for text content like a page title)
+- <%- include(...) %> — outputs unescaped (needed for raw HTML like a partial)
+
+That distinction is intentional and important — using <%- with user-supplied data
+would be a security risk (XSS), so EJS gives you both options and you choose the
+right one for the context.
+
+Topic 3 done — great work! Now let's finish with Topic 4 — Frontend CSS.
+
+You're currently in public/css/components.css. Can you share a CSS snippet from
+any of your stylesheets that you feel represents something meaningful or
+interesting — something beyond just setting a color or font — and walk me through
+what it does?
+
+--------------------------------------------------------------------------------
+
+FERNANDO:
+- The use of "var()". It's perfect to have default values (colors, sizes, radius,
+  paddings) declared in one place and accessible everywhere.
+
+- "transition: box-shadow 0.15s, transform 0.15s;" and
+  ".card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }"
+  That shows a nice transition effect when the user hovers over a card.
+
+--------------------------------------------------------------------------------
+
+COACH:
+Great choices, Fernando! Both of those are worth unpacking:
+
+CSS Custom Properties (var()) — you're right that declaring values in one place
+(typically :root) and referencing them everywhere is a huge maintainability win.
+If you want to change your primary color or spacing scale, you change it once and
+it propagates everywhere automatically.
+
+The hover transition — the transition on the base .card rule is what makes it
+smooth. Without that line, the box-shadow and transform changes in .card:hover
+would snap instantly. The 0.15s duration tells the browser how long to animate
+between the two states.
+
+One thing worth noting: translateY(-2px) moves the card UP by 2 pixels, which
+gives a subtle "lift" effect — a common UI pattern to signal interactivity.
+
+That covers all four topics! Here is a brief summary of what you demonstrated
+today:
+
+--------------------------------------------------------------------------------
+
+SESSION SUMMARY
+---------------
+
+Topic 1 — Express Routing:
+  Strong understanding of routes, req/res, and res.render(). Clarified that
+  render != redirect, and async is optional.
+
+Topic 2 — JavaScript Language Principles:
+  Good grasp of ES Modules and dynamic path resolution. Clarified default vs.
+  named exports.
+
+Topic 3 — EJS Partials:
+  Excellent understanding of include, <%- vs <%=, and passing data from routes
+  to templates.
+
+Topic 4 — Frontend CSS:
+  Solid understanding of CSS custom properties and transition-based hover effects.
+
+================================================================================
+End of Session
+================================================================================
