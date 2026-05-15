@@ -11,7 +11,17 @@
         </div>
 
         <ul class="category-grid" role="list">
-          <li class="category-card">
+          <% categories.forEach(function(category) { %>
+            <li class="category-card">
+              <span class="category-icon" aria-hidden="true">
+                <img src="/images/<%= category.image_filename %>" alt="<%= category.name %>">
+              </span>
+              <span class="category-label">
+                <%= category.name %>
+              </span>
+            </li>
+            <% }); %>
+              <!-- <li class="category-card">
             <span class="category-icon" aria-hidden="true">🌿</span>
             <span class="category-label">Environmental</span>
           </li>
@@ -26,7 +36,7 @@
           <li class="category-card">
             <span class="category-icon" aria-hidden="true">❤️</span>
             <span class="category-label">Health &amp; Wellness</span>
-          </li>
+          </li> -->
         </ul>
       </div>
     </div>

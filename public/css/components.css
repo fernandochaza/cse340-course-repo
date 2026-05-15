@@ -138,6 +138,14 @@
   margin-bottom: var(--space-xs);
 }
 
+.category-icon img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  display: block;
+  margin-inline: auto;
+}
+
 .category-label {
   font-weight: 600;
   color: var(--color-primary);

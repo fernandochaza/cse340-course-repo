@@ -56,3 +56,54 @@ VALUES
   (3, 'Animal Shelter Volunteer Day', 'Assisting shelter staff with animal care, cleaning, and adoption event coordination.', 'Springfield Animal Shelter, Springfield', '2026-08-22'),
   (3, 'Park Cleanup & Beautification', 'Removing litter and invasive plants and planting native flowers throughout Greenway Park.', 'Greenway Park, Springfield', '2026-09-06');
 
+
+CREATE TABLE project_categories (
+	category_id SERIAL PRIMARY KEY,
+	name VARCHAR(100) NOT NULL UNIQUE,
+	image_filename VARCHAR(255)
+);
+
+INSERT INTO project_categories (name, image_filename)
+VALUES
+  ('Construction & Infrastructure', 'cat-construction.png'),
+  ('Environmental Sustainability',  'cat-environmental.png'),
+  ('Food Security',                 'cat-food-security.png'),
+  ('Education & Literacy',          'cat-education.png'),
+  ('Social Services',               'cat-social-services.png');
+
+
+CREATE TABLE service_project_category (
+	service_project_id INT NOT NULL REFERENCES service_project(service_project_id),
+	category_id INT NOT NULL REFERENCES project_categories(category_id),
+	PRIMARY KEY (service_project_id, category_id)
+);
+
+
+INSERT INTO service_project_category (service_project_id, category_id)
+VALUES
+  (1, 1),  -- Community Center Renovation
+  (2, 1),  -- Playground Build
+  (3, 1),  -- Habitat Home Frame Raise
+  (4, 1),  -- School Roof Repair
+  (5, 1),  -- Senior Center Accessibility Upgrade
+
+-- GreenHarvest Growers projects → Environmental Sustainability (2), Food Security (3), Education & Literacy (4)
+  (6, 2),  -- Spring Planting Day → Environmental Sustainability
+  (6, 3),  -- Spring Planting Day → Food Security
+  (7, 2),  -- Composting Workshop → Environmental Sustainability
+  (7, 4),  -- Composting Workshop → Education & Literacy
+  (8, 2),  -- School Garden Launch → Environmental Sustainability
+  (8, 4),  -- School Garden Launch → Education & Literacy
+  (9, 3),  -- Harvest Festival Prep → Food Security
+  (10, 2), -- Winter Greens Greenhouse Build → Environmental Sustainability
+  (10, 3), -- Winter Greens Greenhouse Build → Food Security
+
+-- UnityServe Volunteers projects → Food Security (3), Education & Literacy (4), Social Services (5)
+  (11, 3), -- Food Bank Sort & Pack → Food Security
+  (11, 5), -- Food Bank Sort & Pack → Social Services
+  (12, 4), -- Literacy Tutoring Program → Education & Literacy
+  (12, 5), -- Literacy Tutoring Program → Social Services
+  (13, 5), -- Clothing Drive & Distribution → Social Services
+  (14, 5), -- Animal Shelter Volunteer Day → Social Services
+  (15, 2), -- Park Cleanup & Beautification → Environmental Sustainability
+  (15, 5); -- Park Cleanup & Beautification → Social Services
