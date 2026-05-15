@@ -11,18 +11,26 @@
         </div>
 
         <ul class="projects-list" role="list">
-          <li class="card project-card">
-            <h3>Park Cleanup</h3>
-            <p>Join us to clean up local parks and make them beautiful for everyone in the community.</p>
-          </li>
-          <li class="card project-card">
-            <h3>Food Drive</h3>
-            <p>Help collect and distribute food to those in need across the region.</p>
-          </li>
-          <li class="card project-card">
-            <h3>Community Tutoring</h3>
-            <p>Volunteer to tutor students in various subjects and help shape the next generation.</p>
-          </li>
+          <% projects.forEach(function(project) { %>
+            <li class="card project-card">
+              <h3>
+                <%= project.title %>
+              </h3>
+              <p><strong>Organization:</strong>
+                <%= project.organization_name %>
+              </p>
+              <p><strong>Description:</strong>
+                <%= project.description %>
+              </p>
+              <p><strong>Location:</strong>
+                <%= project.location %>
+              </p>
+              <p><strong>Date:</strong>
+                <%= new Date(project.project_date).toLocaleDateString() %>
+              </p>
+            </li>
+            <% }); %>
+
         </ul>
       </div>
     </div>
