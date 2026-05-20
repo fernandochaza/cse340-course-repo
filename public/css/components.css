@@ -153,6 +153,36 @@
 }
 
 /* ============================================================
+   Organization Detail
+   ============================================================ */
+.org-detail {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.org-detail-logo {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  padding: 4px;
+  border: 1px solid var(--color-border);
+}
+
+.org-detail p {
+  color: var(--color-text-muted);
+}
+
+.org-projects h2 {
+  color: var(--color-primary);
+  margin-bottom: var(--space-sm);
+}
+
+/* ============================================================
    Error Pages
    ============================================================ */
 .error-heading {

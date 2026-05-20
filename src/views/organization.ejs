@@ -1,0 +1,43 @@
+<%- include('partials/header') %>
+
+  <main id="main-content">
+    <div class="page-content">
+      <div class="container">
+
+        <div class="page-header">
+          <h1>
+            <%= organizationDetails.name %>
+          </h1>
+        </div>
+
+        <div class="org-detail">
+          <img src="/images/<%= organizationDetails.logo_filename %>" alt="<%= organizationDetails.name %> logo"
+            class="org-detail-logo">
+          <p>
+            <%= organizationDetails.description %>
+          </p>
+        </div>
+
+        <section class="org-projects" aria-labelledby="projects-heading">
+          <h2 id="projects-heading">Service Projects</h2>
+
+          <% if (projects && projects.length> 0) { %>
+            <ul class="projects-list" role="list">
+              <% projects.forEach(function(project) { %>
+                <li class="card project-card">
+                  <a href="/project/<%= project.service_project_id %>">
+                    <%= project.title %>
+                  </a>
+                </li>
+                <% }); %>
+            </ul>
+            <% } else { %>
+              <p>No service projects are currently listed for this organization.</p>
+              <% } %>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <%- include('partials/footer') %>

@@ -16,7 +16,9 @@
               <img src="/images/<%= organization.logo_filename %>" alt="<%= organization.name %> logo">
               <div class="org-info">
                 <h3>
-                  <%= organization.name %>
+                  <a href="/organization/<%= organization.organization_id %>">
+                    <%= organization.name %>
+                  </a>
                 </h3>
                 <a href="mailto:<%= organization.contact_email %>" class="org-email">
                   <%= organization.contact_email %>
