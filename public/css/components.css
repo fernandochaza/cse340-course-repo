@@ -151,3 +151,39 @@
   color: var(--color-primary);
   font-size: 0.95rem;
 }
+
+/* ============================================================
+   Error Pages
+   ============================================================ */
+.error-heading {
+  color: #b91c1c;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ============================================================
+   Error Details (development only)
+   ============================================================ */
+.error-details {
+  margin-top: var(--space-lg);
+  padding: var(--space-md);
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-md);
+}
+
+.error-details summary {
+  font-weight: 600;
+  color: #b91c1c;
+  cursor: pointer;
+  margin-bottom: var(--space-sm);
+}
+
+.error-details pre {
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: var(--color-text);
+  margin-top: var(--space-xs);
+}

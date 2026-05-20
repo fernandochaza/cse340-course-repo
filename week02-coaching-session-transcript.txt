@@ -1,0 +1,250 @@
+Week 02 Coaching Session Transcript
+=====================================
+Date: May 18, 2026
+Student: Fernando Chazarreta
+Course: CSE 340
+
+---
+
+CONVERSATION LOG
+----------------
+
+Coach: Welcome! Just to be clear from the start, this is a coaching session, not a test.
+It is perfectly okay — and even encouraged — to say "I don't know" or "I made a mistake."
+That's the fastest way we'll learn today. Before we dive in — what's your name?
+
+Fernando: Fernando Chazarreta
+
+---
+
+Coach: Great to meet you, Fernando! You're in a completely safe space here — no pressure at all.
+Before we get into the technical details, can you give me a quick overview of what your
+application is about — what kind of data does it manage and what does it do?
+
+Fernando: My application is a web service deployed in Render, fed with a postgresql database
+that is also deployed in Render. The data come mostly from postgres and static assets.
+It is a simulation of a volunteering web site.
+
+---
+
+[TOPIC 1: Relational Database Design and Structure]
+
+Coach: That's a solid setup — a full-stack application with PostgreSQL on Render is real-world
+stuff! A volunteering site is a great domain for exploring relational data too.
+Let's dig into that database. Can you describe the tables you created in your database —
+what are they, and how do they relate to each other?
+
+Fernando: I've created 4 tables. 3 of those tables represent entities of my data model
+(Organizations, Projects and Categories) and 1 table is to store many to many relations
+between projects and categories.
+
+The organization table contains data about Organizations that can host volunteering projects.
+The Projects table is where data about each Project is stored, and it holds a foreign key of
+the organization id to be able to relate each project with their hosting Organization.
+The Project Categories table, as its name implies, is to store the categories in their own
+entity, we want to do it this way instead of having a column in the project table itself to
+prevent violating the first normal form of database design, and also having consistent
+category names and avoid data inconsistency. Finally there is a table that connects
+projects and categories.
+
+---
+
+Coach: Excellent explanation! Your reasoning about 1NF and data consistency for categories
+is exactly right — that's the kind of design thinking that separates good schemas from
+fragile ones.
+
+I can see your junction table service_project_category in src/setup.sql uses a composite
+primary key (PRIMARY KEY (service_project_id, category_id)). Can you explain in your own
+words why you chose a composite primary key for that table, rather than giving it its own
+auto-incrementing id column?
+
+Fernando: To be honest. It was an idea that AI gave me. I'm not sure but I think the
+reasoning behind it is to have a native way of preventing having a duplicate entry for
+the same project/category combination.
+
+---
+
+Coach: I really appreciate that honesty, Fernando — that takes confidence, and it's exactly
+the kind of thing that helps us learn! And here's the great news: your instinct is correct.
+That's precisely the reason.
+
+A composite primary key on (service_project_id, category_id) means the database itself will
+reject any attempt to insert the same project+category pair twice. The combination of both
+columns must be unique — so "Spring Planting Day + Food Security" can only ever appear once
+in that table, enforced at the database level, not just in application code.
+
+Now, let's look at how you actually query that data. Can you walk me through one of the SQL
+queries you wrote inside one of your model files — what does it select, and why did you
+write it that way?
+
+Fernando: (from src/models/projects.js)
+
+  const query = `
+    SELECT p.service_project_id, p.organization_id, p.title, p.description,
+           p.location, p.project_date, o.name AS organization_name
+    FROM public.service_project p
+    JOIN public.organization o ON p.organization_id = o.organization_id;
+  `;
+
+In this query we are selecting data from the projects table (service_project), specifically
+the project id, organization id, title, description, location and date. We are also taking
+advantage of the organization_id foreign key to do an inner join with the organization table,
+and from that join we get the organization name.
+
+I decided to avoid selecting all (*) because it is considered bad practice, and an inner join
+because I only needed data from the organizations table having a related project.
+
+---
+
+[TOPIC 2: Server-Side Data Access Logic (Node.js)]
+
+Coach: That's a really solid answer. Avoiding SELECT * and consciously choosing INNER JOIN
+over LEFT JOIN based on your data needs — that's exactly the kind of intentional thinking
+good developers practice.
+
+Now let's move up one level, from the SQL itself to the Node.js code that executes it.
+There should be a JavaScript function that actually runs that query against the database.
+Can you show me that function and describe what it does — specifically, how does it send
+the query to PostgreSQL and what does it return?
+
+Fernando: (from src/models/projects.js and src/models/db.js)
+
+  const getAllProjects = async () => {
+    const query = `
+      SELECT p.service_project_id, p.organization_id, p.title, p.description,
+             p.location, p.project_date, o.name AS organization_name
+      FROM public.service_project p
+      JOIN public.organization o ON p.organization_id = o.organization_id;
+    `;
+    const result = await db.query(query);
+    return result.rows;
+  };
+
+The function getAllProjects is an asynchronous function that takes no arguments. It needs
+to be async because it makes use of the "db.query" method, which is the method that takes
+our query and uses it to make a request to the database through the connection pool.
+The connection pool is the way we are using to connect to our database. It is used via the
+"Pool" class that we import from the "pg" library. For development environment, we wrap the
+pool call into another method that provides logging for debugging purposes, and for
+production the query is done directly through the native pool method.
+
+---
+
+[TOPIC 3: Express Server Logic and Routing]
+
+Coach: That's an excellent, thorough explanation — you clearly understand how all the pieces
+connect. The detail about the development logging wrapper is especially good to know; that
+kind of environment-aware setup is a professional practice.
+
+Now let's move to how your app actually serves that data to users. Can you show me a
+specific route declaration from your server file and explain what happens when a user
+navigates to that URL — what path does it map to, and what code gets triggered?
+
+Fernando: (from server.js)
+
+  app.get("/projects", async (req, res) => {
+    const title = "Service Projects";
+    const projects = await getAllProjects();
+    res.render("projects", { title, projects });
+  });
+
+That is the route handler for the "/projects" page. When the user navigates to
+[BASE_URL]/projects, the route handler generates the page title and fetches the Projects
+data from the database using the method that we described in the previous question.
+It then uses the .render method to return the projects page, via the template, and injects
+the title and projects data. Which will replace the template's placeholders related to them.
+
+---
+
+[TOPIC 4: Client-Side Rendering (EJS Templates)]
+
+Coach: Perfect description — you've nailed the full request/response cycle for that route.
+You clearly understand how Express bridges the model and the view.
+
+That brings us to the last topic: the EJS template itself. You mentioned the data "replaces
+placeholders" in the template. Can you show me a specific line of EJS syntax from
+src/views/projects.ejs and explain what the <%= %> or <% %> tags actually do — and why
+they look different from regular HTML?
+
+Fernando:
+
+  <h1>
+    <%= title %>
+  </h1>
+
+  <ul class="projects-list" role="list">
+    <% projects.forEach(function(project) { %>
+
+In those code examples the syntax are different but they essentially do the same — they
+run JS code inside them. The difference is that the one with the equals sign will display
+the result on the page, in this case the value of the variable "title", whereas the one
+without the equals sign is being used to run JS to iterate over the projects data. That
+line does not render anything by itself; the projects data will be rendered inside the
+loop using the "<%= " syntax.
+
+---
+
+Coach: Spot on! The distinction between <%= %> (output) and <% %> (logic only) is the
+core of how EJS works, and you've got it exactly right.
+
+There's one more tag worth noting in your own template — look at line 1 of
+src/views/projects.ejs:
+
+  <%- include('partials/header') %>
+
+Notice the "-" instead of "=". Can you take a guess at what you think the difference
+might be between <%- and <%=?
+
+Fernando: Yes, the difference between them is that the "-" means don't escape HTML and
+print it as it is. And the "=" will escape HTML characters, meaning HTML will be converted
+to a string on the page. We never want to use the "-" to render content that comes from
+user input because it is unsafe.
+
+---
+
+Coach: That is a fantastic answer, Fernando — and the security awareness at the end is
+exactly right. Using <%- on user-generated content would open the door to Cross-Site
+Scripting (XSS) attacks, which is one of the OWASP Top 10 vulnerabilities. The fact that
+you know that shows real maturity as a developer.
+
+---
+
+SESSION SUMMARY
+===============
+
+All four required topics were covered successfully.
+
+Topics Covered:
+  [x] Topic 1: Relational Database Design and Structure
+        - 4 tables: organization, service_project, project_categories, service_project_category
+        - Many-to-many relationship between projects and categories
+        - 1NF reasoning for separating categories into their own table
+        - Composite primary key on junction table to enforce uniqueness
+        - INNER JOIN SQL query with explicit column selection (no SELECT *)
+
+  [x] Topic 2: Server-Side Data Access Logic (Node.js)
+        - getAllProjects() async function in src/models/projects.js
+        - db.query() via pg Pool connection pool
+        - Development logging wrapper vs. production direct pool access
+        - Returns result.rows array
+
+  [x] Topic 3: Express Server Logic and Routing
+        - app.get("/projects", ...) route handler in server.js
+        - Async handler calling getAllProjects()
+        - res.render() passing title and projects data to the EJS template
+
+  [x] Topic 4: Client-Side Rendering (EJS Templates)
+        - <%= %> for outputting/displaying values (HTML-escaped)
+        - <% %> for running JavaScript logic (no output)
+        - <%- %> for unescaped HTML output (used safely for partials/includes)
+        - Security awareness: never use <%- with user input (XSS risk)
+
+Notable Highlights:
+  - Fernando showed intellectual honesty when unsure about the composite primary key
+    and then demonstrated he understood the concept when prompted.
+  - Strong understanding of why INNER JOIN was chosen over LEFT JOIN.
+  - Excellent security awareness regarding XSS and HTML escaping in EJS.
+  - Clear grasp of the full data flow: Database -> Model -> Route -> Template -> Browser.
+
+---
+End of Session
