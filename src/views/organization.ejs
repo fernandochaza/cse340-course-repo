@@ -25,8 +25,9 @@
             <ul class="projects-list" role="list">
               <% projects.forEach(function(project) { %>
                 <li class="card project-card">
-                  <a href="/project/<%= project.service_project_id %>">
+                  <a href="/project/<%= project.service_project_id %>" class="card-link">
                     <%= project.title %>
+                    <span class="card-cta">View details &rarr;</span>
                   </a>
                 </li>
                 <% }); %>

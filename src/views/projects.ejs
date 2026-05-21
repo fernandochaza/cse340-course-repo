@@ -13,21 +13,24 @@
         <ul class="projects-list" role="list">
           <% projects.forEach(function(project) { %>
             <li class="card project-card">
-              <h3>
-                <%= project.title %>
-              </h3>
-              <p><strong>Organization:</strong>
-                <%= project.organization_name %>
-              </p>
-              <p><strong>Description:</strong>
-                <%= project.description %>
-              </p>
-              <p><strong>Location:</strong>
-                <%= project.location %>
-              </p>
-              <p><strong>Date:</strong>
-                <%= new Date(project.project_date).toLocaleDateString() %>
-              </p>
+              <a href="/project/<%= project.service_project_id %>" class="card-link">
+                <h3>
+                  <%= project.title %>
+                </h3>
+                <p><strong>Organization:</strong>
+                  <%= project.organization_name %>
+                </p>
+                <p><strong>Description:</strong>
+                  <%= project.description %>
+                </p>
+                <p><strong>Location:</strong>
+                  <%= project.location %>
+                </p>
+                <p><strong>Date:</strong>
+                  <%= new Date(project.project_date).toLocaleDateString() %>
+                </p>
+                <span class="card-cta">View details &rarr;</span>
+              </a>
             </li>
             <% }); %>
 
