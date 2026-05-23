@@ -1,5 +1,7 @@
 import { getAllProjects, getProjectDetails, getUpcomingProjects } from "../models/projects.js";
 
+import { getProjectCategories } from "../models/categories.js";
+
 const NUMBER_OF_UPCOMING_PROJECTS = 5;
 
 const getProjectsPage = async (req, res) => {
@@ -13,12 +15,15 @@ const getProjectDetailsPage = async (req, res) => {
   const projectDetails = await getProjectDetails(projectId);
 
   if (!projectDetails) {
-    // TODO: think about how to redirect to 404 page instead of sending text response
-    return res.status(404).send("Project not found");
+    const err = new Error("Project not found");
+    err.status = 404;
+    throw err;
   }
 
+  const categories = await getProjectCategories(projectId);
+
   const title = projectDetails.title;
-  res.render("project", { title, projectDetails });
+  res.render("project", { title, projectDetails, categories });
 };
 
 export { getProjectsPage, getProjectDetailsPage };

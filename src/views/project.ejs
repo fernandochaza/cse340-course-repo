@@ -26,6 +26,18 @@
             <%= projectDetails.location %>
           </p>
 
+          <% if (categories && categories.length> 0) { %>
+            <ul class="category-tags" role="list">
+              <% categories.forEach(function(cat) { %>
+                <li class="category-tag">
+                  <a href="/category/<%= cat.category_id %>">
+                    <%= cat.name %>
+                  </a>
+                </li>
+                <% }); %>
+            </ul>
+            <% } %>
+
         </div>
       </div>
   </main>

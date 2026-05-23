@@ -1,0 +1,37 @@
+<%- include('partials/header') %>
+
+  <main id="main-content">
+    <div class="page-content">
+      <div class="container">
+
+        <div class="page-header">
+          <p class="page-label">Category</p>
+          <h1>
+            <%= category.name %>
+          </h1>
+        </div>
+
+        <section class="category-projects" aria-labelledby="projects-heading">
+          <h2 id="projects-heading">Service Projects</h2>
+
+          <% if (projects && projects.length> 0) { %>
+            <ul class="projects-list" role="list">
+              <% projects.forEach(function(project) { %>
+                <li class="card project-card">
+                  <a href="/project/<%= project.service_project_id %>" class="card-link">
+                    <%= project.title %>
+                      <span class="card-cta">View details &rarr;</span>
+                  </a>
+                </li>
+                <% }); %>
+            </ul>
+            <% } else { %>
+              <p>No service projects are currently listed for this category.</p>
+              <% } %>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <%- include('partials/footer') %>

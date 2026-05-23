@@ -50,9 +50,9 @@ const getUpcomingProjects = async (number_of_projects) => {
       `;
 
   const queryParams = [number_of_projects];
-  const result = await db.query(query, queryParams);        
+  const result = await db.query(query, queryParams);
   return result.rows;
-}
+};
 
 const getProjectDetails = async (id) => {
   const query = `
@@ -73,6 +73,32 @@ const getProjectDetails = async (id) => {
   const result = await db.query(query, queryParams);
 
   return result.rows[0];
-}
+};
 
-export { getAllProjects, getProjectsByOrganizationId, getUpcomingProjects, getProjectDetails };
+const getProjectsByCategory = async (category_id) => {
+  const query = `
+    SELECT 
+      sp.service_project_id,
+      sp.organization_id,
+      sp.title,
+      sp.description,
+      sp.location,
+      sp.project_date
+    FROM service_project AS sp
+    JOIN service_project_category AS spc ON spc.service_project_id = sp.service_project_id
+    WHERE spc.category_id = $1
+  `;
+
+  const queryParams = [category_id];
+  const result = await db.query(query, queryParams);
+
+  return result.rows;
+};
+
+export {
+  getAllProjects,
+  getProjectsByOrganizationId,
+  getUpcomingProjects,
+  getProjectDetails,
+  getProjectsByCategory,
+};

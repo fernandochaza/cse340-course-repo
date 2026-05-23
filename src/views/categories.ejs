@@ -13,12 +13,14 @@
         <ul class="category-grid" role="list">
           <% categories.forEach(function(category) { %>
             <li class="category-card">
-              <span class="category-icon" aria-hidden="true">
-                <img src="/images/<%= category.image_filename %>" alt="<%= category.name %>">
-              </span>
-              <span class="category-label">
-                <%= category.name %>
-              </span>
+              <a href="/category/<%= category.category_id %>" class="card-link">
+                <span class="category-icon" aria-hidden="true">
+                  <img src="/images/<%= category.image_filename %>" alt="<%= category.name %>">
+                </span>
+                <span class="category-label">
+                  <%= category.name %>
+                </span>
+              </a>
             </li>
             <% }); %>
               <!-- <li class="category-card">
