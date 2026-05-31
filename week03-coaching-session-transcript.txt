@@ -1,0 +1,286 @@
+Week 03 Coaching Session Transcript
+Date: May 24, 2026
+Student: Fernando Chazarreta
+================================================================================
+
+COACH: Welcome! Just to be clear from the start, this is a coaching session, not
+a test. It is perfectly okay—and even encouraged—to say "I don't know" or "I made
+a mistake." That's the fastest way we'll learn today.
+
+I'm your Learning Coach for this session. We'll be having a conversation about the
+work you've done on your assignment — exploring your models, views, controllers,
+and error handling. There's no pressure here; the goal is just to talk through your
+thinking and help fill in any gaps.
+
+Before we dive in, what's your name?
+
+--------------------------------------------------------------------------------
+
+FERNANDO: Fernando Chazarreta
+
+--------------------------------------------------------------------------------
+
+COACH: It's great to meet you, Fernando! You're in a safe space here — no wrong
+answers, no grades, just a conversation about your code and your thinking.
+
+Let's start with your models, since they form the foundation of how your app talks
+to the database.
+
+Can you walk me through one of the model functions you wrote — ideally one that
+accepts a parameter and uses it in a SQL query? Feel free to paste the code or
+point me to the file, and then just tell me in your own words what it does.
+
+--------------------------------------------------------------------------------
+
+FERNANDO: [Shared code from src/models/categories.js, lines 13-22]
+
+  const getCategoryById = async (id) => {
+    const query = `
+        SELECT * FROM public.project_categories WHERE category_id = $1;
+      `;
+    const params = [id];
+
+    const result = await db.query(query, params);
+
+    return result.rows[0];
+  };
+
+This function takes a category id as an argument. Its purpose is to find and return
+the matching record in the project categories table.
+
+The id is safely passed to the query, avoiding injecting id directly into the
+string and instead passing it to the db.query as a query param.
+
+The db.query handles the connection to the database, runs the query, and returns
+the results. Those results then are returned by the function.
+
+--------------------------------------------------------------------------------
+
+COACH: That's a really solid explanation, Fernando — and I want to highlight
+something you said: you correctly identified that passing `id` as a query parameter
+(rather than directly into the string) is a security measure. That's an important
+instinct to have.
+
+I want to dig into one small detail: at the end of the function, you return
+`result.rows[0]` — just the first element of the array, rather than the full
+`result.rows`. Why did you make that choice?
+
+--------------------------------------------------------------------------------
+
+FERNANDO: Because the intention of the method is to get a single category by its
+id. db.query returns an array of results, and we know it will be only one.
+
+--------------------------------------------------------------------------------
+
+COACH: Exactly right — since `category_id` is a primary key, you'll never get more
+than one match, so grabbing `rows[0]` makes perfect sense. Good reasoning.
+
+Here's a quick follow-up thought to consider: if no matching category exists for
+that `id`, what does `rows[0]` actually return — and does your code account for
+that case?
+
+--------------------------------------------------------------------------------
+
+FERNANDO: [Shared code from src/controllers/categories.js, lines 12-17]
+
+  const category = await getCategoryById(categoryId);
+  if (!category) {
+    const err = new Error("Category not found");
+    err.status = 404;
+    throw err;
+  }
+
+In that case, the function will return undefined and that is taken care of in the
+consumer by redirecting the user to the 404 page.
+
+--------------------------------------------------------------------------------
+
+COACH: That's great — and you actually jumped ahead a little by showing me your
+controller code, which I love! You're already thinking across layers. We'll
+definitely come back to that controller and the error handling in more detail
+shortly.
+
+For now, let's shift to your views. Can you share an EJS snippet where you're
+dynamically inserting data into a link — for example, building a URL with an id or
+some other variable?
+
+--------------------------------------------------------------------------------
+
+FERNANDO: [Shared code from src/views/projects.ejs]
+
+  <ul class="projects-list" role="list">
+    <% projects.forEach(function(project) { %>
+      <li class="card project-card">
+        <h3><a href="/project/<%= project.service_project_id %>">
+            <%= project.title %>
+          </a></h3>
+        <p><strong>Organization:</strong>
+          <a href="/organization/<%= project.organization_id %>">
+            <%= project.organization_name %>
+          </a>
+        </p>
+        <p><strong>Description:</strong>
+          <%= project.description %>
+        </p>
+        <p><strong>Location:</strong>
+          <%= project.location %>
+        </p>
+        <p><strong>Date:</strong>
+          <%= new Date(project.project_date).toLocaleDateString() %>
+        </p>
+      </li>
+      <% }); %>
+  </ul>
+
+In the projects template we are using the "project.organization_id" to link to the
+organization page represented by that id.
+
+--------------------------------------------------------------------------------
+
+COACH: Nice work — you're iterating over the `projects` array and dynamically
+building both the project link and the organization link using the IDs from each
+object. That's exactly what we're looking for.
+
+Looking at this template, I notice you're using two different EJS tags: `<%= %>`
+for outputting data, and `<%- %>` for the `include()` calls at the top and bottom.
+Can you explain what the difference is between those two tags?
+
+--------------------------------------------------------------------------------
+
+FERNANDO: <%= %> Is used to run js code without escaping the results and <%- %> is
+used to insert unescaped html into the page.
+
+--------------------------------------------------------------------------------
+
+COACH: Good instinct on `<%-` — you're right that it renders unescaped HTML, which
+is exactly why it's used for `include()` calls (you want the partial's HTML to
+actually render).
+
+However, I want to gently push back on `<%= %>`: it actually does the *opposite*
+of what you described — it escapes the output before inserting it into the page.
+Why do you think that distinction matters, especially for data that comes from a
+database or user input?
+
+--------------------------------------------------------------------------------
+
+FERNANDO: Because we always want to escape the output when it may come from user
+input. Not escaping it can lead to security issues.
+
+--------------------------------------------------------------------------------
+
+COACH: Exactly right — that's called Cross-Site Scripting (XSS), and using `<%= %>`
+is one of your first lines of defense against it. If a malicious user stored a
+script tag in the database, escaping the output prevents it from executing in
+someone else's browser. Good instinct.
+
+Now let's move to your controllers. You actually showed me a glimpse of one earlier.
+Can you share a route handler that uses a route parameter — something like
+`req.params` — and walk me through what it does?
+
+--------------------------------------------------------------------------------
+
+FERNANDO: [Shared code from src/controllers/projects.js]
+
+  const getProjectDetailsPage = async (req, res) => {
+    const projectId = req.params.id;
+    const projectDetails = await getProjectDetails(projectId);
+
+    if (!projectDetails) {
+      const err = new Error("Project not found");
+      err.status = 404;
+      throw err;
+    }
+
+    const categories = await getProjectCategories(projectId);
+
+    const title = projectDetails.title;
+    res.render("project", { title, projectDetails, categories });
+  };
+
+This is a route middleware, it is a regular middleware that is used to decide what
+to do when the user navigates to the "/project/:id" page.
+First, it uses the request to read the "id" param.
+Then, it uses "getProjectDetails" from models to get that project data from the
+database. If a project was not found, it throws an error that will be caught by the
+global error handler. If a project is found, it uses the project id to also look
+for the categories related to that project, using the model method
+"getProjectCategories". Finally it decides what the title is and returns the view
+for that page dynamically injecting the data it collected.
+
+--------------------------------------------------------------------------------
+
+COACH: That's a thorough walkthrough, Fernando — well done. One small note: this
+is the project controller, so the route would be `/project/:id` rather than
+`/category/:id`, but the logic you described is exactly right.
+
+You mentioned that throwing the error causes it to be "caught by the global error
+handler" — that's a perfect segue into our last topic. Can you show me that global
+error handler and explain how it works?
+
+--------------------------------------------------------------------------------
+
+FERNANDO: [Shared code from server.js, lines 58-77]
+
+  // Global error handler
+  app.use((err, req, res, next) => {
+    // Log error details for debugging
+    console.error("Error occurred:", err.message);
+    console.error("Stack trace:", err.stack);
+
+    // Determine status and template
+    const status = err.status || 500;
+    const template = status === 404 ? "404" : "500";
+
+    // Prepare data for the template
+    const context = {
+      title: status === 404 ? "Page Not Found" : "Server Error",
+      error: err.message,
+      stack: err.stack,
+    };
+
+    // Render the appropriate error template
+    res.status(status).render(`errors/${template}`, context);
+  });
+
+The global error handler uses the error middleware pattern, it receives the "err"
+as argument. Handles logging some information about what caused the error. Then it
+determines which type of error it is and returns the view of that corresponding
+error.
+
+--------------------------------------------------------------------------------
+
+COACH: Great explanation. You correctly identified the key pieces — logging, status
+determination, and rendering the right template.
+
+Here's something worth thinking about: Express has regular middleware with
+`(req, res, next)` and error-handling middleware with `(err, req, res, next)`. What
+is it specifically about the error handler's signature that tells Express "this is
+an error handler, not a regular middleware"?
+
+--------------------------------------------------------------------------------
+
+FERNANDO: That it has 4 parameters. If it does, express will use the first param
+to read the error information.
+
+--------------------------------------------------------------------------------
+
+COACH: Exactly right — Express literally checks the number of parameters on the
+function using `function.length`. If it sees 4, it knows to only invoke it when an
+error has been passed. That's a subtle but important detail, and you nailed it.
+
+Fernando, we've now covered all four topics:
+- Models — parameterized queries and why they matter for security
+- Views — dynamic EJS links, and the difference between <%= %> (escaped) and
+  <%- %> (unescaped)
+- Controllers — route parameters with req.params and coordinating multiple model
+  calls
+- Error handling — the global error handler, the catch-all 404 route, and the
+  4-argument middleware signature
+
+You demonstrated a solid understanding across the board. The areas where you showed
+the strongest instincts were around security — parameterized queries, output
+escaping, and error boundaries. Well done.
+
+================================================================================
+End of Session
+================================================================================
