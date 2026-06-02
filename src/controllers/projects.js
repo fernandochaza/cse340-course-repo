@@ -66,8 +66,10 @@ const getProjectDetailsPage = async (req, res) => {
 const showNewProjectForm = async (req, res) => {
   const organizations = await getOrganizationList();
   const title = "Add New Service Project";
+  const formData = req.session.formData || {};
+  delete req.session.formData;
 
-  res.render("new-project", { title, organizations });
+  res.render("new-project", { title, organizations, formData });
 };
 
 const processNewProjectForm = async (req, res) => {
@@ -76,6 +78,7 @@ const processNewProjectForm = async (req, res) => {
     results.array().forEach((error) => {
       req.flash("error", error.msg);
     });
+    req.session.formData = req.body;
     return res.redirect("/new-project");
   }
 
