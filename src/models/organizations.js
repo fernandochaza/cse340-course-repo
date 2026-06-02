@@ -11,6 +11,18 @@ const getAllOrganizations = async () => {
   return result.rows;
 };
 
+const getOrganizationList = async () => {
+  const query = `
+      SELECT organization_id, name
+      FROM public.organization
+      ORDER BY name;
+    `;
+
+  const result = await db.query(query);
+
+  return result.rows;
+};
+
 const getOrganizationDetails = async (organizationId) => {
   const query = `
       SELECT
@@ -70,4 +82,10 @@ const updateOrganization = async (id, name, description, contactEmail, logoFilen
   await db.query(query, queryParams);
 };
 
-export { getAllOrganizations, getOrganizationDetails, createOrganization, updateOrganization };
+export {
+  getAllOrganizations,
+  getOrganizationList,
+  getOrganizationDetails,
+  createOrganization,
+  updateOrganization,
+};
