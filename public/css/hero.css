@@ -29,21 +29,12 @@
   max-width: 560px;
 }
 
-.btn-primary {
-  display: inline-block;
-  background: var(--color-accent);
-  color: #fff;
-  font-weight: 600;
-  font-size: 1rem;
+.hero .btn-primary {
   padding: 0.75rem 2rem;
-  border-radius: var(--radius-sm);
-  text-decoration: none;
-  transition: background 0.15s, transform 0.1s;
+  font-size: 1rem;
   margin-top: var(--space-xs);
 }
 
-.btn-primary:hover {
-  background: #2563eb;
+.hero .btn-primary:hover {
   transform: translateY(-1px);
-  text-decoration: none;
 }
