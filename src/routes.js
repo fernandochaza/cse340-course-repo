@@ -8,7 +8,11 @@ import { getTestErrorPage } from "./controllers/errors.js";
 import {
   showOrganizationDetailsPage,
   showNewOrganizationForm,
-  processNewOrganizationForm,  organizationValidation,} from "./controllers/organizations.js";
+  processNewOrganizationForm,
+  showEditOrganizationForm,
+  processEditOrganizationForm,
+  organizationValidation,
+} from "./controllers/organizations.js";
 
 const router = express.Router();
 
@@ -16,7 +20,9 @@ router.get("/", getHomePage);
 router.get("/organizations", getOrganizationsPage);
 router.get("/organization/:id", showOrganizationDetailsPage);
 router.get("/new-organization", showNewOrganizationForm);
-router.post('/new-organization', organizationValidation, processNewOrganizationForm);
+router.post("/new-organization", organizationValidation, processNewOrganizationForm);
+router.get("/edit-organization/:id", showEditOrganizationForm);
+router.post("/edit-organization/:id", organizationValidation, processEditOrganizationForm);
 router.get("/projects", getProjectsPage);
 router.get("/project/:id", getProjectDetailsPage);
 router.get("/categories", getCategoriesPage);
