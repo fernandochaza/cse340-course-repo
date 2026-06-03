@@ -126,11 +126,3 @@ export {
   processEditProjectForm,
   projectValidation,
 };
-
-export {
-  getProjectsPage,
-  getProjectDetailsPage,
-  showNewProjectForm,
-  processNewProjectForm,
-  projectValidation,
-};
