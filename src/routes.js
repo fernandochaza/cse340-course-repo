@@ -27,6 +27,9 @@ import {
   showUserRegistrationForm,
   processUserRegistrationForm,
   userRegistrationValidation,
+  showLoginForm,
+  processLoginForm,
+  processLogout,
 } from "./controllers/users.js";
 import {
   showOrganizationDetailsPage,
@@ -64,6 +67,9 @@ router.post("/edit-category/:id", categoryValidation, processEditCategoryForm);
 // user routes
 router.get("/register", showUserRegistrationForm);
 router.post("/register", userRegistrationValidation, processUserRegistrationForm);
+router.get("/login", showLoginForm);
+router.post("/login", processLoginForm);
+router.get("/logout", processLogout);
 
 // error-handling routes
 router.get("/test-error", getTestErrorPage);

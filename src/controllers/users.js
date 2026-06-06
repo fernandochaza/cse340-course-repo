@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import { body, validationResult } from "express-validator";
-import { createUser } from "../models/users.js";
+import { createUser, authenticateUser } from "../models/users.js";
 
 const userRegistrationValidation = [
   body("name")
@@ -48,3 +48,30 @@ const processUserRegistrationForm = async (req, res) => {
 };
 
 export { showUserRegistrationForm, processUserRegistrationForm, userRegistrationValidation };
+
+const showLoginForm = (req, res) => {
+  res.render("login", { title: "Login" });
+};
+
+const processLoginForm = async (req, res) => {
+  const { email, password } = req.body;
+  const user = await authenticateUser(email, password);
+
+  if (user) {
+    req.session.user = user;
+    req.flash("success", "Login successful!");
+    console.log("Logged in user:", user);
+    return res.redirect("/");
+  }
+
+  req.flash("error", "Invalid email or password.");
+  res.redirect("/login");
+};
+
+const processLogout = (req, res) => {
+  delete req.session.user;
+  req.flash("success", "You have been logged out.");
+  res.redirect("/login");
+};
+
+export { showLoginForm, processLoginForm, processLogout };

@@ -40,15 +40,13 @@
       </nav>
 
       <div class="user-actions">
-        <% if (locals.user) { %>
+        <% if (isLoggedIn) { %>
           <span class="user-greeting">Hello, <%= locals.user.name %></span>
-          <form action="/logout" method="POST" style="display:inline;">
-            <button type="submit" class="btn-link">Log out</button>
-          </form>
-        <% } else { %>
-          <a href="/register" class="btn-link">Register</a>
-          <a href="/login" class="btn btn-primary btn-sm">Log in</a>
-        <% } %>
+          <a href="/logout" class="btn-link">Log out</a>
+          <% } else { %>
+            <a href="/register" class="btn-link">Register</a>
+            <a href="/login" class="btn btn-primary btn-sm">Log in</a>
+            <% } %>
       </div>
     </div>
   </header>
