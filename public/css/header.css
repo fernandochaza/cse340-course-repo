@@ -98,3 +98,42 @@
 .nav-toggle svg {
   display: block;
 }
+
+/* ============================================================
+   User Actions (right side of header)
+   ============================================================ */
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  flex-shrink: 0;
+}
+
+.user-greeting {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-text);
+  text-decoration: none;
+  padding-bottom: 2px;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.btn-link:hover {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-accent);
+  text-decoration: none;
+}
+
+.btn-sm {
+  padding: 0.3rem 0.75rem;
+  font-size: 0.875rem;
+}

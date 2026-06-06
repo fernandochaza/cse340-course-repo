@@ -295,6 +295,14 @@
   resize: vertical;
 }
 
+.field-error {
+  display: block;
+  font-size: 0.85rem;
+  color: #dc2626;
+  margin-top: 0.25rem;
+  min-height: 1.2em;
+}
+
 .form-actions {
   display: flex;
   gap: var(--space-sm);

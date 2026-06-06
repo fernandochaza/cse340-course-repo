@@ -107,3 +107,23 @@ VALUES
   (14, 5), -- Animal Shelter Volunteer Day → Social Services
   (15, 2), -- Park Cleanup & Beautification → Environmental Sustainability
   (15, 5); -- Park Cleanup & Beautification → Social Services
+
+CREATE TABLE roles (
+  role_id SERIAL PRIMARY KEY,
+  role_name VARCHAR(50) NOT NULL UNIQUE,
+  role_description TEXT
+);
+
+INSERT INTO roles (role_name, role_description)
+VALUES
+  ('user','Standard user with basic access'),
+  ('admin','Administrator with full system access');
+
+CREATE TABLE users (
+  user_id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  role_id INT NOT NULL REFERENCES roles(role_id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

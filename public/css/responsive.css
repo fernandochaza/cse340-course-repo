@@ -80,4 +80,8 @@
   .nav-menu a:hover {
     background: var(--color-bg);
   }
+
+  .user-actions {
+    display: none;
+  }
 }

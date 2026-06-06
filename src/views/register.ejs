@@ -1,0 +1,45 @@
+<%- include('partials/header') %>
+
+  <main id="main-content">
+    <div class="page-content">
+      <div class="container">
+        <div class="page-header">
+          <h1>
+            <%= title %>
+          </h1>
+          <p>Join our community of volunteers and make a difference!</p>
+        </div>
+
+        <form action="/register" method="POST" class="card form-card" id="registration-form">
+          <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" value="<%= formData.name || '' %>" />
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" value="<%= formData.email || '' %>" />
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" />
+          </div>
+
+          <div class="form-group">
+            <label for="confirm-password">Confirm Password</label>
+            <input type="password" id="confirm-password" name="confirm-password" />
+            <span class="field-error" id="confirm-password-error" aria-live="polite"></span>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Register</button>
+            <a href="/" class="btn btn-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+
+  <%- include('partials/footer') %>

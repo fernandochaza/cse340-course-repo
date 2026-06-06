@@ -8,6 +8,9 @@
     </p>
   </div>
 </footer>
+  <% if (locals.scripts) { locals.scripts.forEach(function(src) { %>
+  <script src="<%= src %>"></script>
+  <% }); } %>
 </body>
 
 </html>

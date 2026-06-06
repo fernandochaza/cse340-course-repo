@@ -1,0 +1,343 @@
+Week 04 Coaching Session Transcript
+Date: June 3, 2026
+Student: Fernando Chazarreta
+================================================================================
+
+COACH: Welcome! Just to be clear from the start, this is a coaching session, not
+a test. It is perfectly okay—and even encouraged—to say "I don't know" or "I made
+a mistake." That's the fastest way we'll learn today.
+
+I'm your Learning Coach and Software Mentor for this session. We'll be having a
+conversation about your Week 04 assignment work, covering four topics: handling
+form submissions, forms for updates, sessions and flash messages, and server-side
+validation. There's no pass/fail here — just a good discussion to help solidify
+your understanding.
+
+Before we dive in — what's your name?
+
+--------------------------------------------------------------------------------
+
+FERNANDO: Fernando Chazarreta
+
+--------------------------------------------------------------------------------
+
+COACH: Great to meet you, Fernando! This is a safe space — feel free to think out
+loud, say "I'm not sure," or share code that you're not 100% confident about.
+That's exactly what we're here for.
+
+Let's start with Topic 1: Handling Form Submissions.
+
+Can you walk me through how your application receives and processes data when a
+form is submitted? Feel free to paste or point me to a relevant controller
+function that handles a form POST request.
+
+--------------------------------------------------------------------------------
+
+FERNANDO: The way we handle form submissions is through a POST request.
+
+Example:
+  router.post("/new-project", projectValidation, processNewProjectForm);
+
+The POST requests that handle form submission receives 2 route handlers, the
+first one is an array of validation functions, and the second one is the route
+controller that will get the validation results and decide how to process the form.
+
+--------------------------------------------------------------------------------
+
+COACH: That's a solid pattern — separating validation middleware from the
+controller keeps your concerns nicely divided.
+
+I can see your processNewProjectForm function clearly (lines 75–91 of
+src/controllers/projects.js). Here's the key part:
+
+  const processNewProjectForm = async (req, res) => {
+    const results = validationResult(req);
+    if (!results.isEmpty()) {
+      results.array().forEach((error) => {
+        req.flash("error", error.msg);
+      });
+      req.session.formData = req.body;
+      return res.redirect("/new-project");
+    }
+
+    const { organizationId, title, description, location, date } = req.body;
+    await createProject(title, description, location, date, organizationId);
+    req.flash("success", "Service project added successfully!");
+    res.redirect("/projects");
+  };
+
+I notice that when validation fails, you save req.body into req.session.formData
+before redirecting back to the form. Can you explain why you do that, and what
+would happen to the user's experience if you didn't?
+
+--------------------------------------------------------------------------------
+
+FERNANDO: The reason I did that is because without it, when a user had an error
+when submitting the new project form, all the data that they entered was lost.
+The workaround is to store the data that the user entered in their session, with
+"formData" property. And in the new-project template, we take that data from the
+session, inject it into the template and read those values first, and default to
+empty if there is no data (new entry).
+
+--------------------------------------------------------------------------------
+
+COACH: Exactly right — that's often called the "sticky form" pattern, and you've
+described it well. The redirect-after-POST flow means the browser makes a fresh
+GET request, so without saving to the session, req.body would be gone entirely.
+
+I also notice something interesting in your showNewProjectForm (lines 70–71):
+
+  const formData = req.session.formData || {};
+  delete req.session.formData;
+
+You read the data and then immediately delete it from the session. Why do you
+think that delete is important there?
+
+--------------------------------------------------------------------------------
+
+FERNANDO: That is a good question. I can't tell if it is strictly necessary, I
+believe that the data will be overwritten in the next call anyway.
+
+--------------------------------------------------------------------------------
+
+COACH: That's a reasonable instinct — and you're right that it would be
+overwritten on the next failed submission. But think about a different scenario:
+
+A user submits the form, gets validation errors, and the form re-loads with their
+data pre-filled. Now instead of fixing the errors, they navigate away to a
+different page, then later come back to /new-project fresh via the nav menu.
+
+What do you think would happen without that delete?
+
+--------------------------------------------------------------------------------
+
+FERNANDO: I see. Without the delete, the data will persist even after navigating
+away.
+
+--------------------------------------------------------------------------------
+
+COACH: Exactly! The session lives on the server and persists across requests, so
+without the delete, a user coming back to the form later would see someone else's
+— or their own old — data pre-filled in what should be a blank form. That delete
+makes the formData behave as "one-time use," which is the correct behavior.
+
+Great discussion on Topic 1. Let's move to Topic 2: Forms for Updates.
+
+Your edit form needs to pre-populate fields with the existing data from the
+database. Can you share an EJS snippet from one of your edit templates — for
+example from src/views/edit-project.ejs — that shows how you inject existing
+data into a form input?
+
+--------------------------------------------------------------------------------
+
+FERNANDO: <div class="form-group">
+            <label for="location">Location</label>
+            <input type="text" id="location" name="location" maxlength="200" required
+              value="<%= projectDetails.location %>" />
+          </div>
+
+projectDetails is injected via the route controller. So when the user goes to
+that project to edit it, the controller gets the current values.
+
+--------------------------------------------------------------------------------
+
+COACH: Good — that's the straightforward case for a text input. The value
+attribute just gets the EJS expression and it works cleanly.
+
+Now, dropdowns are a bit trickier. In your edit form, the organization field is a
+<select> — you can't just set a value attribute on it. How did you handle
+pre-selecting the correct option in that dropdown?
+
+--------------------------------------------------------------------------------
+
+FERNANDO: I created a model function that returns all organization ids and names,
+the edit project controller uses that method (getOrganizationList) to get the
+organizations and inject that as "organizations" to the template. Then in the
+template, when creating the select options, I just need to match the project
+organization to one of the list with "org.organization_id===projectDetails.organization_id".
+
+--------------------------------------------------------------------------------
+
+COACH: That's a solid approach — loop through all options and conditionally add
+selected to the one that matches. Clean and readable.
+
+I also notice something interesting on your date input (line 35 of
+src/views/edit-project.ejs):
+
+  value="<%= projectDetails.project_date.toISOString().split('T')[0] %>"
+
+Can you walk me through what that .toISOString().split('T')[0] is doing, and why
+you needed it instead of just using projectDetails.project_date directly?
+
+--------------------------------------------------------------------------------
+
+FERNANDO: I'm honestly not sure. My guess is that we need to strip out the
+timezone information from the datetime value, because the date input requires a
+date only.
+
+--------------------------------------------------------------------------------
+
+COACH: That's a great guess and you're essentially correct! Let me fill in the
+details:
+
+PostgreSQL returns date values as JavaScript Date objects. When you call
+.toISOString() on one, you get a string like "2026-06-03T00:00:00.000Z". The
+<input type="date"> element expects exactly the format "YYYY-MM-DD" — so
+.split('T')[0] just chops off everything after the T, leaving you with
+"2026-06-03".
+
+Without it, the date input would receive the full ISO string and wouldn't be able
+to parse it, so the field would appear blank.
+
+Good instinct to reason through it even when unsure. Let's move to Topic 3:
+Sessions and Flash Messages.
+
+You've already touched on sessions a bit with the formData pattern. Can you now
+share a code snippet that shows how flash messages are displayed to the user in
+your views — and explain how the message gets from req.flash(...) in the
+controller all the way to what the user sees on screen?
+
+--------------------------------------------------------------------------------
+
+FERNANDO:
+  const processNewProjectForm = async (req, res) => {
+    const results = validationResult(req);
+    if (!results.isEmpty()) {
+      results.array().forEach((error) => {
+        req.flash("error", error.msg);
+      });
+      req.session.formData = req.body;
+      return res.redirect("/new-project");
+    }
+
+    const { organizationId, title, description, location, date } = req.body;
+
+    await createProject(title, description, location, date, organizationId);
+    req.flash("success", "Service project added successfully!");
+    res.redirect("/projects");
+  };
+
+HEADER PARTIAL:
+  <div class="flash-messages">
+    <div class="container">
+      <% const messages = flash(); %>
+      <% Object.keys(messages).forEach(type => { %>
+        <% if (messages[type].length > 0) { %>
+          <% messages[type].forEach(msg => { %>
+            <div class="alert <%= type %>"><%= msg %></div>
+          <% }); %>
+        <% } %>
+      <% }); %>
+    </div>
+  </div>
+
+I added the flash message html to the header partial to keep a persistent pattern
+to show flash messages to the user.
+
+The flash messages are handled by the flash middleware. That is configured to be
+fire and forget. Any time the middleware is asked to return the messages, they get
+deleted from the store.
+
+--------------------------------------------------------------------------------
+
+COACH: That's a well-structured explanation — and putting it in the header partial
+is a smart choice since it means every page automatically handles flash messages
+without any extra work per template.
+
+I can see you actually wrote your own flash middleware from scratch — that's
+impressive. I notice it's split into two parts: flashMiddleware which attaches
+req.flash, and flashLocals which does res.locals.flash = req.flash.
+
+Why do you think that second step — assigning it to res.locals — is necessary?
+What would break if you only had req.flash and skipped the res.locals part?
+
+--------------------------------------------------------------------------------
+
+FERNANDO: Without it, the messages would not be globally available in the template
+and we would have to manually add them individually.
+
+--------------------------------------------------------------------------------
+
+COACH: Exactly right. res.locals is Express's built-in way to make data available
+to every template rendered during that request/response cycle — without needing to
+explicitly pass it in every res.render() call. It's the right tool for anything
+that needs to be globally available in views, like flash messages or user info.
+
+Now let's cover the last topic — Topic 4: Server-side Validation.
+
+You're already using express-validator in your project. Can you explain why
+server-side validation is necessary even when you already have HTML attributes
+like required and maxlength on your form inputs?
+
+--------------------------------------------------------------------------------
+
+FERNANDO: Client side validation is focused on providing quick feedback to the
+user and preventing sending wrong data wherever possible, it never has to be
+treated as a final validation. Final validation should be handled server side to
+prevent injecting wrong or even malicious data.
+
+--------------------------------------------------------------------------------
+
+COACH: Perfectly stated. Client-side validation is a UX convenience; server-side
+validation is a security requirement. A user — or a malicious actor — can bypass
+HTML attributes entirely by sending a raw HTTP request directly to your endpoint,
+completely skipping the browser.
+
+Now, looking at your projectValidation array in src/controllers/projects.js, I
+noticed this rule:
+
+  body("organizationId")
+    .notEmpty()
+    .withMessage("Organization is required")
+    .isInt()
+    .withMessage("Please select a valid organization"),
+
+Why is the .isInt() check on organizationId particularly important from a security
+perspective, compared to just checking .notEmpty()?
+
+--------------------------------------------------------------------------------
+
+FERNANDO: I don't know. My guess is that if we don't validate that it is an
+integer we could receive SQL injection.
+
+--------------------------------------------------------------------------------
+
+COACH: That's exactly right — and it's a great instinct to connect it to SQL
+injection. If organizationId accepted any string, an attacker could try to send
+something like "1 OR 1=1" or other SQL fragments as the value. By enforcing
+.isInt(), you guarantee the value is a safe integer before it ever reaches your
+database query.
+
+It's worth noting that your database queries also use parameterized queries (the
+$1, $2 placeholders in your model), which is a second layer of defense against
+SQL injection. Having both is good practice — validate the shape of the data AND
+use parameterized queries.
+
+================================================================================
+SESSION SUMMARY
+================================================================================
+
+That wraps up all four topics, Fernando! Here is a quick summary of what we
+covered:
+
+- Topic 1 - Form Submissions: POST handler pattern with validation middleware,
+  sticky forms via req.session.formData, and the importance of deleting session
+  data after it's consumed.
+
+- Topic 2 - Forms for Updates: Pre-populating text inputs with value="<%= ... %>",
+  handling <select> dropdowns with a conditional selected attribute, and formatting
+  date objects for <input type="date">.
+
+- Topic 3 - Sessions & Flash Messages: Custom flash middleware using req.session
+  as the store, res.locals for global template availability, and the fire-and-
+  forget consumption pattern.
+
+- Topic 4 - Server-side Validation: Why client-side validation alone is
+  insufficient, and how type validation like .isInt() specifically guards against
+  SQL injection alongside parameterized queries.
+
+You demonstrated solid understanding across all four areas. Well done!
+
+================================================================================
+END OF TRANSCRIPT
+================================================================================
