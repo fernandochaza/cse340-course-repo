@@ -8,6 +8,9 @@
         </p>
         <p>Email: <%= email %>
         </p>
+        <% if (user && user.role_name==='admin' ) { %>
+          <p><a href="/users" class="btn btn-primary">Manage Users</a></p>
+          <% } %>
       </div>
     </section>
   </main>

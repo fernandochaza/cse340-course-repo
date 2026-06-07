@@ -8,7 +8,9 @@
           <h1>
             <%= organizationDetails.name %>
           </h1>
-          <a href="/edit-organization/<%= organizationDetails.organization_id %>" class="btn btn-secondary">Edit</a>
+          <% if (user && user.role_name==='admin' ) { %>
+            <a href="/edit-organization/<%= organizationDetails.organization_id %>" class="btn btn-secondary">Edit</a>
+            <% } %>
         </div>
 
         <div class="org-detail">
@@ -28,7 +30,7 @@
                 <li class="card project-card">
                   <a href="/project/<%= project.service_project_id %>" class="card-link">
                     <%= project.title %>
-                    <span class="card-cta">View details &rarr;</span>
+                      <span class="card-cta">View details &rarr;</span>
                   </a>
                 </li>
                 <% }); %>

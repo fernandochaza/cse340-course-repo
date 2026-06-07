@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import { body, validationResult } from "express-validator";
-import { createUser, authenticateUser } from "../models/users.js";
+import { createUser, authenticateUser, getAllUsers } from "../models/users.js";
 
 const userRegistrationValidation = [
   body("name")
@@ -18,8 +18,8 @@ const userRegistrationValidation = [
   body("password")
     .notEmpty()
     .withMessage("Password is required")
-    .isLength({ min: 8 })
-    .withMessage("Password must be at least 8 characters"),
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters"),
 ];
 
 const showUserRegistrationForm = (req, res) => {
@@ -87,4 +87,27 @@ const showDashboard = (req, res) => {
   res.render("dashboard", { title: "Dashboard", name, email });
 };
 
-export { showLoginForm, processLoginForm, processLogout, requireLogin, showDashboard };
+const requireRole = (role) => {
+  return (req, res, next) => {
+    if (req.session && req.session.user && req.session.user.role_name === role) {
+      return next();
+    }
+    req.flash("error", "You do not have permission to access that page.");
+    res.redirect("/dashboard");
+  };
+};
+
+const showUsersPage = async (req, res) => {
+  const users = await getAllUsers();
+  res.render("users", { title: "Users", users });
+};
+
+export {
+  showLoginForm,
+  processLoginForm,
+  processLogout,
+  requireLogin,
+  showDashboard,
+  requireRole,
+  showUsersPage,
+};

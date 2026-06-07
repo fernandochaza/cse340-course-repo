@@ -9,7 +9,9 @@
           <h1>
             <%= category.name %>
           </h1>
-          <a href="/edit-category/<%= category.category_id %>" class="btn btn-secondary">Edit</a>
+          <% if (user && user.role_name==='admin' ) { %>
+            <a href="/edit-category/<%= category.category_id %>" class="btn btn-secondary">Edit</a>
+            <% } %>
         </div>
 
         <section class="category-projects" aria-labelledby="projects-heading">

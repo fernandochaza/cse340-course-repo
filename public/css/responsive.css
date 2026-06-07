@@ -41,10 +41,14 @@
     justify-content: center;
   }
 
-  /* Reset centered nav positioning on mobile */
+  /* On mobile: logo | user-actions (compact) | hamburger */
+  .site-header .container {
+    grid-template-columns: 1fr auto auto;
+    gap: var(--space-xs);
+  }
+
   .site-nav {
-    position: static;
-    transform: none;
+    justify-content: flex-start;
   }
 
   .nav-menu {
@@ -82,6 +86,11 @@
   }
 
   .user-actions {
+    display: flex;
+    justify-self: end;
+  }
+
+  .user-greeting {
     display: none;
   }
 }
