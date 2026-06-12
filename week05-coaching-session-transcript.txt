@@ -1,0 +1,334 @@
+Week 05 Coaching Session Transcript
+Date: 2026-06-12
+Student: Fernando Chazarreta
+================================================================================
+
+--- COACH ---
+Welcome! Just to be clear from the start, this is a coaching session, not a test.
+It is perfectly okay—and even encouraged—to say "I don't know" or "I made a
+mistake." That's the fastest way we'll learn today.
+
+I'm here as your Learning Coach and Software Mentor for this Week 05 session.
+We'll be exploring four topics together: registration and password hashing, login
+and sessions, protected access middleware, and role-based navigation in your UI.
+There's no grade here — just a conversation to help solidify what you've built
+and learned.
+
+Before we dive in, what's your name so I can address you properly throughout
+our session?
+
+--- FERNANDO ---
+Fernando Chazarreta
+
+--- COACH ---
+Great to meet you, Fernando!
+
+This is a safe space — there are no wrong answers, and if something isn't clear
+or you made a decision you're not sure about, that's exactly what we're here to
+talk through.
+
+Let's start with Topic 1: Registration and Password Hashing.
+
+I'm running in your code editor environment, so I can look at your files
+directly. To kick things off — can you walk me through how your application
+handles creating a new user? Specifically, what happens to the password before
+it gets stored in the database?
+
+--- FERNANDO ---
+The user creation is handled by the controller function processUserRegistrationForm:
+
+  const processUserRegistrationForm = async (req, res) => {
+    const results = validationResult(req);
+    if (!results.isEmpty()) {
+      results.array().forEach((error) => {
+        req.flash("error", error.msg);
+      });
+      req.session.formData = req.body;
+      return res.redirect("/register");
+    }
+
+    const { name, email, password } = req.body;
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
+    await createUser(name, email, passwordHash);
+    req.flash("success", "Registration successful! You can now log in.");
+    res.redirect("/");
+  };
+
+This method reads the registration form, validates it, and, if it is a valid
+submission. It takes the password from the body. The password itself does not
+get stored on the database, instead, a hash of the password is created and
+stored. That hash will be used to validate following user log ins.
+
+--- COACH ---
+That's a great explanation, Fernando! You've identified the key security
+principle — storing a hash instead of the plain password is exactly right.
+
+I can see on line 42 that you've set saltRounds = 10. Can you tell me what salt
+rounds actually do, and why you chose 10 specifically?
+
+--- FERNANDO ---
+I'm not 100% sure, but I believe it is the number of times the password goes
+through the hashing process, probably 10 was the recommended number when I
+configured it.
+
+--- COACH ---
+That's a reasonable intuition, and you're on the right track — but let me
+sharpen that a bit.
+
+Salt rounds actually control the cost factor of the bcrypt algorithm. Each
+increment doubles the amount of computation required. So saltRounds = 10 means
+bcrypt performs 2^10 (1,024) internal iterations. The "salt" itself is a random
+value bcrypt generates and embeds in the hash to ensure that two identical
+passwords produce different hashes.
+
+You're right that 10 is the commonly recommended default — it's a balance
+between being slow enough to resist brute-force attacks, but fast enough that
+legitimate users don't notice a delay when logging in.
+
+Now, looking at line 43 in users.js:
+
+  const passwordHash = await bcrypt.hash(password, saltRounds);
+
+Why do you think it's important that this function is async and uses await here?
+
+--- FERNANDO ---
+I don't know. That function comes from the bcrypt module, I didn't develop it.
+
+--- COACH ---
+That's a fair and honest answer — and "I don't know" is a perfectly valid
+starting point here!
+
+Here's a hint to think about: bcrypt.hash() is intentionally designed to be
+slow (that's what makes it secure). Knowing that, what do you think might happen
+to your web server if you ran that slow operation without await — in other words,
+if it were blocking and synchronous?
+
+--- FERNANDO ---
+It will make the user registration a slow process.
+
+--- COACH ---
+You're partially right — the slowness is there either way. But the key
+difference is about what happens to everything else while that slow operation
+runs.
+
+Node.js runs on a single thread. If bcrypt.hash() were synchronous and blocking,
+your entire server would be frozen — unable to handle any other requests — until
+that hashing operation finished.
+
+By using async/await, the server can hand off that slow work and continue
+handling other users' requests in the meantime. Only this one registration
+request waits, not the whole server.
+
+That's a really important concept for Node.js applications — non-blocking I/O
+is what keeps them performant under load.
+
+Now let's move on to Topic 2: Login and Sessions. Can you show me the code that
+handles what happens when a user submits the login form?
+
+--- FERNANDO ---
+  const processLoginForm = async (req, res) => {
+    const { email, password } = req.body;
+    const user = await authenticateUser(email, password);
+
+    if (user) {
+      req.session.user = user;
+      req.flash("success", "Login successful!");
+      console.log("Logged in user:", user);
+      return res.redirect("/dashboard");
+    }
+
+    req.flash("error", "Invalid email or password.");
+    res.redirect("/login");
+  };
+
+--- COACH ---
+Great — this is clean and straightforward. I can see on line 61 that when
+authentication succeeds, you store the user in req.session.user.
+
+Can you explain what that line actually does — what is req.session, and why is
+storing the user there important for what happens after the login redirect?
+
+--- FERNANDO ---
+The session storage is the right place to store the logged in user because it is
+accessible from all templates and it also persists in between http requests. By
+storing the user in the session storage we can persist that state and show the
+user the necessary pages and permissions.
+
+--- COACH ---
+That's an excellent explanation, Fernando — you've nailed the core reason
+sessions exist.
+
+HTTP is stateless by nature, meaning each request has no memory of the previous
+one. The session is what bridges that gap, giving your app a way to "remember"
+that this particular browser is associated with a logged-in user.
+
+I do want to flag one thing I noticed on line 63 of users.js:
+
+  console.log("Logged in user:", user);
+
+This logs the full user object on every login. Can you think of why this might
+be a problem in a production environment?
+
+--- FERNANDO ---
+I'm not really sure. I know that is not recommended to log things in production
+but I can't see how someone could see those logs, those logs live on our servers.
+
+--- COACH ---
+That's a really thoughtful answer, and you're right that server logs aren't
+directly visible to end users. But here's the concern: that user object likely
+contains the password hash.
+
+While a hash isn't the plain password, logging sensitive data like that creates
+a few risks:
+
+- Server logs are often stored in files, shipped to log aggregation services, or
+  viewed by multiple team members — expanding the attack surface.
+- If a log file were ever leaked or improperly secured, you'd be exposing user
+  data unnecessarily.
+- It's a good habit to treat any credential-adjacent data as sensitive, even
+  hashed.
+
+It's a minor thing, and very common during development — but worth removing
+before going to production.
+
+Now let's move to Topic 3: Protected Access Middleware. Can you show me the code
+for your requireLogin middleware and walk me through what it does?
+
+--- FERNANDO ---
+Right, thanks.
+
+  const requireLogin = (req, res, next) => {
+    if (!req.session || !req.session.user) {
+      req.flash("error", "You must be logged in to access that page.");
+      return res.redirect("/login");
+    }
+    next();
+  };
+
+The requireLogin middleware is used to protect routes that our site visitors are
+not supposed to access. It redirects visitors to the login page or shows the
+page if the user is logged in.
+
+--- COACH ---
+That's a solid explanation. And I notice you're checking both !req.session AND
+!req.session.user on line 78 — that's a defensive coding choice.
+
+What do you think would happen if you only checked !req.session.user and skipped
+the !req.session check?
+
+--- FERNANDO ---
+I don't know. It looks like it would be the same.
+
+--- COACH ---
+Good instinct to question it — it looks the same at first glance, but there's a
+subtle difference.
+
+If req.session itself is undefined or null (which can happen if the session
+middleware fails or isn't configured), then trying to access req.session.user
+would throw a runtime error — "Cannot read properties of undefined". Your app
+would crash on that request instead of gracefully redirecting.
+
+By checking !req.session first, you're protecting against that crash. It's a
+small defensive detail, but it makes your middleware more robust.
+
+Now, do you also have a requireRole middleware? If so, can you show me that code?
+
+--- FERNANDO ---
+  const requireRole = (role) => {
+    return (req, res, next) => {
+      if (req.session && req.session.user && req.session.user.role_name === role) {
+        return next();
+      }
+      req.flash("error", "You do not have permission to access that page.");
+      res.redirect("/dashboard");
+    };
+  };
+
+--- COACH ---
+Nice — and this is an interesting design. I can see that requireRole is a
+function that returns a middleware function, rather than being a middleware
+function directly like requireLogin.
+
+Can you explain why it's structured that way — what does that pattern allow you
+to do when you actually apply it to a route?
+
+--- FERNANDO ---
+This pattern allows the use of an extra argument, the "role". We do that because
+additional arguments are not supported in built-in express middleware functions.
+
+--- COACH ---
+Exactly right, Fernando — that's a clean explanation. It's called a middleware
+factory pattern. By wrapping the middleware in an outer function, you can pass
+in a parameter (role) and get back a customized middleware tailored to that
+specific role.
+
+So in your routes you can do something like requireRole("Admin") or
+requireRole("Employee") and it just works — without needing separate middleware
+functions for each role.
+
+Now let's move to our final topic — Topic 4: Protected Access Links and
+Navigation. Can you show me where in your EJS templates you conditionally show
+or hide navigation links based on the user's role?
+
+--- FERNANDO ---
+  <% if (user && user.role_name==='admin' ) { %>
+    <a href="/new-category" class="btn btn-primary">Add a new category</a>
+  <% } %>
+
+--- COACH ---
+Good example! Can you walk me through what this snippet is actually doing — what
+does the user && check before user.role_name === 'admin' protect against?
+
+--- FERNANDO ---
+It protects against runtime errors if the user object does not exist and we try
+to access its role_name property.
+
+--- COACH ---
+Exactly right — same defensive pattern you used in requireLogin. If user is null
+or undefined (i.e., no one is logged in), JavaScript's short-circuit evaluation
+stops at user && and never tries to read user.role_name, avoiding a crash.
+
+One thing I want to make sure we discuss: this snippet hides the "Add a new
+category" link from non-admin users. But if someone knew the URL /new-category
+and typed it directly into their browser, would this EJS check stop them?
+
+--- FERNANDO ---
+The route is also protected by the requireRole middleware. A non admin user will
+be redirected to the dashboard page. And a visitor would be redirected to the
+login page by the requireLogin middleware of the dashboard.
+
+--- COACH ---
+That's a perfect answer, Fernando — and it demonstrates a really important
+security principle: defense in depth.
+
+Hiding the link in the UI is good for user experience, but it's never enough on
+its own because anyone can manually type a URL. The real protection happens at
+the route level with requireLogin and requireRole — the UI is just the friendly
+layer on top.
+
+================================================================================
+SESSION SUMMARY
+
+All four required topics were covered:
+
+  Topic 1 - Registration and Password Hashing:
+    bcrypt, salt rounds, async hashing, non-blocking I/O
+
+  Topic 2 - Login and Sessions:
+    Authenticating users, persisting state with req.session,
+    production logging concerns
+
+  Topic 3 - Protected Access Middleware:
+    requireLogin defensive checks, requireRole middleware factory pattern
+
+  Topic 4 - Protected Access Links and Navigation:
+    Conditional EJS rendering, short-circuit evaluation,
+    defense in depth (UI + route-level protection)
+
+Recommended area for further study:
+  - Async/non-blocking concepts in Node.js
+
+================================================================================
+End of Session
