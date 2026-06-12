@@ -8,6 +8,7 @@ import {
 } from "../models/projects.js";
 import { getOrganizationList } from "../models/organizations.js";
 import { getProjectCategories } from "../models/categories.js";
+import { isUserVolunteering } from "../models/volunteers.js";
 
 const NUMBER_OF_UPCOMING_PROJECTS = 5;
 
@@ -60,8 +61,12 @@ const getProjectDetailsPage = async (req, res) => {
 
   const categories = await getProjectCategories(projectId);
 
+  const volunteering = req.session.user
+    ? await isUserVolunteering(req.session.user.user_id, projectId)
+    : false;
+
   const title = projectDetails.title;
-  res.render("project", { title, projectDetails, categories });
+  res.render("project", { title, projectDetails, categories, volunteering });
 };
 
 const showNewProjectForm = async (req, res) => {

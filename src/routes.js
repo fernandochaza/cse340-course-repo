@@ -35,6 +35,7 @@ import {
   requireRole,
   showUsersPage,
 } from "./controllers/users.js";
+import { addVolunteerToProject, removeVolunteerFromProject } from "./controllers/volunteers.js";
 import {
   showOrganizationDetailsPage,
   showNewOrganizationForm,
@@ -65,6 +66,8 @@ router.post(
 );
 router.get("/projects", getProjectsPage);
 router.get("/project/:id", getProjectDetailsPage);
+router.post("/project/:id/volunteer", requireLogin, addVolunteerToProject);
+router.post("/project/:id/unvolunteer", requireLogin, removeVolunteerFromProject);
 router.get("/project/:projectId/assign-categories", requireRole("admin"), showAssignCategoriesForm);
 router.post(
   "/project/:projectId/assign-categories",

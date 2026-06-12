@@ -43,6 +43,21 @@
             </ul>
             <% } %>
 
+              <% if (user) { %>
+                <div class="volunteer-section">
+                  <% if (volunteering) { %>
+                    <p><strong>You are volunteering for this project.</strong></p>
+                    <form action="/project/<%= projectDetails.service_project_id %>/unvolunteer" method="POST">
+                      <button type="submit" class="btn btn-secondary">Remove myself as a volunteer</button>
+                    </form>
+                    <% } else { %>
+                      <form action="/project/<%= projectDetails.service_project_id %>/volunteer" method="POST">
+                        <button type="submit" class="btn btn-primary">Volunteer for this project</button>
+                      </form>
+                      <% } %>
+                </div>
+                <% } %>
+
         </div>
       </div>
   </main>

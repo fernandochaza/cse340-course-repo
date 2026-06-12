@@ -32,4 +32,13 @@ const getProjectsByVolunteer = async (userId) => {
   return result.rows;
 };
 
-export { addVolunteer, removeVolunteer, getProjectsByVolunteer };
+const isUserVolunteering = async (userId, projectId) => {
+  const query = `
+    SELECT 1 FROM user_project_volunteer
+    WHERE user_id = $1 AND service_project_id = $2;
+  `;
+  const result = await db.query(query, [userId, projectId]);
+  return result.rows.length > 0;
+};
+
+export { addVolunteer, removeVolunteer, getProjectsByVolunteer, isUserVolunteering };
